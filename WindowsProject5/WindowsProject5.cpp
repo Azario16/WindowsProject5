@@ -12,31 +12,31 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#define PORT 20000 // Порт, на котором мы будем принимать данные
+#define PORT 20000 // РџРѕСЂС‚, РЅР° РєРѕС‚РѕСЂРѕРј РјС‹ Р±СѓРґРµРј РїСЂРёРЅРёРјР°С‚СЊ РґР°РЅРЅС‹Рµ
 
-// Глобальные переменные для безопасного доступа из нескольких потоков
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ Р±РµР·РѕРїР°СЃРЅРѕРіРѕ РґРѕСЃС‚СѓРїР° РёР· РЅРµСЃРєРѕР»СЊРєРёС… РїРѕС‚РѕРєРѕРІ
 std::mutex g_mutex;
 std::string g_receivedData;
-int frameNumber = 0; // Глобальная переменная для отслеживания номера кадра
+int frameNumber = 0; // Р“Р»РѕР±Р°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ РЅРѕРјРµСЂР° РєР°РґСЂР°
 
-// Функция для сохранения изображения в файл
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ С„Р°Р№Р»
 void SaveImageToFile(const std::string& imageData, int frameNumber, const std::string& directory) {
-    // std::filesystem::create_directories(directory); // Создать директорию, если она не существует
+    // std::filesystem::create_directories(directory); // РЎРѕР·РґР°С‚СЊ РґРёСЂРµРєС‚РѕСЂРёСЋ, РµСЃР»Рё РѕРЅР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 
     std::string filename = directory + "\\frame_" + std::to_string(frameNumber) + ".jpg";
     std::ofstream outfile(filename, std::ofstream::binary);
     if (outfile.is_open()) {
         outfile.write(imageData.c_str(), imageData.size());
         outfile.close();
-        std::cout << "Изображение сохранено в файл: " << filename << std::endl;
+        std::cout << "РР·РѕР±СЂР°Р¶РµРЅРёРµ СЃРѕС…СЂР°РЅРµРЅРѕ РІ С„Р°Р№Р»: " << filename << std::endl;
     }
     else {
-        std::cerr << "Ошибка открытия файла для сохранения: " << filename << std::endl;
+        std::cerr << "РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р° РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ: " << filename << std::endl;
     }
 }
 
 void ReceiveThreadFunc(HWND hwnd, SOCKET udpSocket) {
-    std::vector<char> imageBuffer; // Буфер для хранения байтов изображения
+    std::vector<char> imageBuffer; // Р‘СѓС„РµСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ Р±Р°Р№С‚РѕРІ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 
     char buffer[1024];
     sockaddr_in senderAddress;
@@ -44,28 +44,28 @@ void ReceiveThreadFunc(HWND hwnd, SOCKET udpSocket) {
     while (true) {
         int bytesReceived = recvfrom(udpSocket, buffer, sizeof(buffer), 0, (sockaddr*)&senderAddress, &senderAddressSize);
         if (bytesReceived == SOCKET_ERROR) {
-            std::cerr << "Ошибка приема данных" << std::endl;
-            OutputDebugStringA("Ошибка приема данных\n"); // Вывод ошибки в Debug Output
+            std::cerr << "РћС€РёР±РєР° РїСЂРёРµРјР° РґР°РЅРЅС‹С…" << std::endl;
+            OutputDebugStringA("РћС€РёР±РєР° РїСЂРёРµРјР° РґР°РЅРЅС‹С…\n"); // Р’С‹РІРѕРґ РѕС€РёР±РєРё РІ Debug Output
             break;
         }
 
         std::string receivedData(buffer, bytesReceived);
 
-        // Обработка полученных данных
+        // РћР±СЂР°Р±РѕС‚РєР° РїРѕР»СѓС‡РµРЅРЅС‹С… РґР°РЅРЅС‹С…
         if (receivedData == "start") {
-            // Получено сообщение "start", начинаем собирать байты изображения
-            imageBuffer.clear(); // Очищаем буфер
+            // РџРѕР»СѓС‡РµРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ "start", РЅР°С‡РёРЅР°РµРј СЃРѕР±РёСЂР°С‚СЊ Р±Р°Р№С‚С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+            imageBuffer.clear(); // РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂ
         }
         else if (receivedData == "stop") {
-            // Получено сообщение "stop", завершаем сбор байтов и создаем изображение
+            // РџРѕР»СѓС‡РµРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ "stop", Р·Р°РІРµСЂС€Р°РµРј СЃР±РѕСЂ Р±Р°Р№С‚РѕРІ Рё СЃРѕР·РґР°РµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ
             if (!imageBuffer.empty()) {
-                // Создание изображения JPEG из буфера
+                // РЎРѕР·РґР°РЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ JPEG РёР· Р±СѓС„РµСЂР°
                 SaveImageToFile(std::string(imageBuffer.begin(), imageBuffer.end()), frameNumber++, "C:\\image");
-                imageBuffer.clear(); // Очистка буфера
+                imageBuffer.clear(); // РћС‡РёСЃС‚РєР° Р±СѓС„РµСЂР°
             }
         }
         else {
-            // Получены байты изображения, добавляем их в буфер
+            // РџРѕР»СѓС‡РµРЅС‹ Р±Р°Р№С‚С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ, РґРѕР±Р°РІР»СЏРµРј РёС… РІ Р±СѓС„РµСЂ
             imageBuffer.insert(imageBuffer.end(), buffer, buffer + bytesReceived);
         }
     }
@@ -77,29 +77,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        // Создание сокета для приема данных по UDP
+        // РЎРѕР·РґР°РЅРёРµ СЃРѕРєРµС‚Р° РґР»СЏ РїСЂРёРµРјР° РґР°РЅРЅС‹С… РїРѕ UDP
         SOCKET udpSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (udpSocket == INVALID_SOCKET) {
-            std::cerr << "Ошибка создания сокета" << std::endl;
+            std::cerr << "РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ СЃРѕРєРµС‚Р°" << std::endl;
             WSACleanup();
             return 1;
         }
 
-        // Привязка сокета к локальному адресу и порту
+        // РџСЂРёРІСЏР·РєР° СЃРѕРєРµС‚Р° Рє Р»РѕРєР°Р»СЊРЅРѕРјСѓ Р°РґСЂРµСЃСѓ Рё РїРѕСЂС‚Сѓ
         sockaddr_in localAddress;
         localAddress.sin_family = AF_INET;
         localAddress.sin_port = htons(PORT);
         localAddress.sin_addr.s_addr = INADDR_ANY;
         if (bind(udpSocket, (sockaddr*)&localAddress, sizeof(localAddress)) == SOCKET_ERROR) {
-            std::cerr << "Ошибка привязки сокета к порту" << std::endl;
+            std::cerr << "РћС€РёР±РєР° РїСЂРёРІСЏР·РєРё СЃРѕРєРµС‚Р° Рє РїРѕСЂС‚Сѓ" << std::endl;
             closesocket(udpSocket);
             WSACleanup();
             return 1;
         }
 
-        // Запуск потока для приема данных по UDP
+        // Р—Р°РїСѓСЃРє РїРѕС‚РѕРєР° РґР»СЏ РїСЂРёРµРјР° РґР°РЅРЅС‹С… РїРѕ UDP
         std::thread receiveThread(ReceiveThreadFunc, hwnd, udpSocket);
-        receiveThread.detach(); // Отсоединяем поток от основного потока GUI
+        receiveThread.detach(); // РћС‚СЃРѕРµРґРёРЅСЏРµРј РїРѕС‚РѕРє РѕС‚ РѕСЃРЅРѕРІРЅРѕРіРѕ РїРѕС‚РѕРєР° GUI
     }
     break;
     case WM_PAINT:
@@ -110,9 +110,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         RECT rcClient;
         GetClientRect(hwnd, &rcClient);
 
-        // OutputDebugStringA("Инициализация Winsock\n");
+        // OutputDebugStringA("РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Winsock\n");
 
-        // Вывод полученных данных в центре окна
+        // Р’С‹РІРѕРґ РїРѕР»СѓС‡РµРЅРЅС‹С… РґР°РЅРЅС‹С… РІ С†РµРЅС‚СЂРµ РѕРєРЅР°
         std::lock_guard<std::mutex> lock(g_mutex);
         DrawTextA(hdc, g_receivedData.c_str(), -1, &rcClient, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
@@ -121,19 +121,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
     case WM_TIMER:
     {
-        // Перерисовка окна
+        // РџРµСЂРµСЂРёСЃРѕРІРєР° РѕРєРЅР°
         InvalidateRect(hwnd, NULL, TRUE);
     }
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
-    case WM_USER + 1: // Сообщение о получении данных
+    case WM_USER + 1: // РЎРѕРѕР±С‰РµРЅРёРµ Рѕ РїРѕР»СѓС‡РµРЅРёРё РґР°РЅРЅС‹С…
     {
         std::string receivedData(reinterpret_cast<const char*>(lParam));
         std::lock_guard<std::mutex> lock(g_mutex);
         g_receivedData = receivedData;
-        InvalidateRect(hwnd, NULL, TRUE); // Перерисовка окна для отображения полученных данных
+        InvalidateRect(hwnd, NULL, TRUE); // РџРµСЂРµСЂРёСЃРѕРІРєР° РѕРєРЅР° РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїРѕР»СѓС‡РµРЅРЅС‹С… РґР°РЅРЅС‹С…
     }
     break;
     default:
@@ -141,23 +141,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
-// Функция создания и отображения главного окна
+// Р¤СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅРёСЏ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    OutputDebugStringA("Инициализация Winsock\n");
-    std::cerr << "Инициализация Winsock" << std::endl;
+    OutputDebugStringA("РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Winsock\n");
+    std::cerr << "РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Winsock" << std::endl;
 
-    // Инициализация Winsock
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "Ошибка инициализации Winsock" << std::endl;
+        std::cerr << "РћС€РёР±РєР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё Winsock" << std::endl;
         return 1;
     }
 
-    // Регистрация класса окна
+    // Р РµРіРёСЃС‚СЂР°С†РёСЏ РєР»Р°СЃСЃР° РѕРєРЅР°
     const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
     WNDCLASS wc = { };
@@ -168,7 +168,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     RegisterClass(&wc);
 
-    // Создание окна
+    // РЎРѕР·РґР°РЅРёРµ РѕРєРЅР°
     HWND hwnd = CreateWindowEx(
         0,                              // Optional window styles.
         CLASS_NAME,                     // Window class
@@ -191,7 +191,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     ShowWindow(hwnd, nCmdShow);
 
-    // Цикл обработки сообщений
+    // Р¦РёРєР» РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
     MSG msg = {};
     while (GetMessage(&msg, NULL, 0, 0))
     {
